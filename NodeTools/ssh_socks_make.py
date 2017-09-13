@@ -42,3 +42,4 @@ if __name__ == "__main__":
 
         os.system("route del default")
         os.system("route add default gw %s" % (ip_gw))
+        os.system("ifconfig %s down" % (tun))
