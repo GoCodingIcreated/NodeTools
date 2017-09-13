@@ -8,5 +8,5 @@ if __name__ == "__main__":
     dev = "enp0s8"
     if len(sys.argv) == 3:
         ip = sys.argv[1]
-        dev = sys.arv[2]
+        dev = sys.argv[2]
     os.system("iptables -t nat -A POSTROUTING -s %s -o %s -j MASQUERADE" % (ip, dev))
