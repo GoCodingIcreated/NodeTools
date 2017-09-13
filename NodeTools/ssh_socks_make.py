@@ -20,12 +20,10 @@ if __name__ == "__main__":
         ip_ssh = sys.argv[1]
         username = sys.argv[2]
 
-    os.system("ip tuntap add dev tun0 mode tun user nickolas")
-    os.system("ifconfig tun0 %s netmask %s" % (ip_virt1, netmask_virt1))
-
+    os.system("ip tuntap add dev tun3 mode tun user %s" % username)
+    os.system("ifconfig tun3 %s netmask %s" % (ip_virt1, netmask_virt1))
 
     pid = os.fork()
-
 
     if pid != 0:
         # parent
