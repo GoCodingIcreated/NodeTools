@@ -21,7 +21,7 @@ if __name__ == "__main__":
         socks_server_addr = sys.argv[1]
         username = sys.argv[2]
 
-    os.system("ip tuntap add dev %s mode tun user %s" %s (tun, username))
+    os.system("ip tuntap add dev %s mode tun user %s" % (tun, username))
     os.system("ifconfig %s %s netmask %s" % (tun, ip_virt1, netmask_virt1))
 
 
