@@ -14,21 +14,23 @@ if __name__ == "__main__":
     netmask_virt2 = "255.255.255.0"
     ip_dns = "8.8.8.8"
 
+    tun = "tun3"
+
     socks_server_addr = "localhost:1080"
 
     if len(sys.argv) > 2:
         ip_ssh = sys.argv[1]
         username = sys.argv[2]
 
-    os.system("ip tuntap add dev tun3 mode tun user %s" % username)
-    os.system("ifconfig tun3 %s netmask %s" % (ip_virt1, netmask_virt1))
+    os.system("ip tuntap add dev %s mode tun user %s" % (tun, username))
+    os.system("ifconfig %s %s netmask %s" % (tun, ip_virt1, netmask_virt1))
 
     pid = os.fork()
 
     if pid != 0:
         # parent
-        os.system("badvpn-tun2socks --tundev tun0 --netif-ipaddr %s --netif-netmask %s --socks-server-addr %s >out" %
-                 (ip_virt2, netmask_virt2, socks_server_addr))
+        os.system("badvpn-tun2socks --tundev %s --netif-ipaddr %s --netif-netmask %s --socks-server-addr %s >out" %
+                 (tun, ip_virt2, netmask_virt2, socks_server_addr))
     else:
         #child
         #os.system("route add %s gw %s" % (ip_ssh, ip_gw))
