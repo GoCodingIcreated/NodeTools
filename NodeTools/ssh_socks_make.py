@@ -23,6 +23,9 @@ if __name__ == "__main__":
         ip_ssh = sys.argv[1]
         username = sys.argv[2]
 
+    os.system("ifconfig tun2 down")
+    os.system("ifconfig tun3 down")
+
     os.system("ip tuntap add dev %s mode tun user %s" % (tun, username))
     os.system("ifconfig %s %s netmask %s" % (tun, ip_virt1, netmask_virt1))
 
@@ -38,7 +41,7 @@ if __name__ == "__main__":
         time.sleep(5)
         os.system("route del default")
         os.system("route add %s gw %s" % (ip_dns, ip_gw))
-        os.system("route add default gw %s" % (ip_virt2))
+        os.system("route add default gw %s  device %s" % (ip_virt2, tun))
         os.system("route -nNvee")
         os.system("ssh -l %s -D %s %s" % (username, socks_server_addr, ip_ssh))
 

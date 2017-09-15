@@ -36,7 +36,7 @@ if __name__ == "__main__":
         time.sleep(1)
         os.system("route del default")
         os.system("route add %s gw %s" % (ip_dns, ip_gw))
-        os.system("route add default gw %s" % (ip_virt2))
+        os.system("route add default gw %s  device %s" % (ip_virt2, tun))
         os.system("route -nNvee")
         try:
             os.wait()
