@@ -2,6 +2,7 @@
 
 import os
 import sys
+import time
 
 if __name__ == "__main__":
     ip_ssh = "10.0.1.1"
@@ -34,6 +35,7 @@ if __name__ == "__main__":
     else:
         #child
         #os.system("route add %s gw %s" % (ip_ssh, ip_gw))
+        os.sleep(5)
         os.system("route del default")
         os.system("route add %s gw %s" % (ip_dns, ip_gw))
         os.system("route add default gw %s" % (ip_virt2))
