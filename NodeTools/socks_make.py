@@ -33,11 +33,15 @@ if __name__ == "__main__":
         os.system("badvpn-tun2socks --tundev %s --netif-ipaddr %s --netif-netmask %s --socks-server-addr %s >out" %
                   (tun, ip_virt2, netmask_virt2, socks_server_addr))
     else:
+        time.sleep(1)
         os.system("route del default")
         os.system("route add %s gw %s" % (ip_dns, ip_gw))
         os.system("route add default gw %s" % (ip_virt2))
         os.system("route -nNvee")
-        os.wait()
+        try:
+            os.wait()
+        except KeyboardInterrupt:
+            pass
         os.system("route del default")
         os.system("route add default gw %s" % (ip_gw))
         os.system("ifconfig %s down" % (tun))
