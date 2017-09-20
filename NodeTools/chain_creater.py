@@ -30,29 +30,31 @@ def ParseGlobalConfig(config):
 
 
 class SSH(object):
-    def __init__(self, host ,login, password, port=23):
+    def __init__(self, host ,login, password, port=22):
         client = paramiko.SSHClient()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         client.connect(hostname=host, username=login,
                        password=password, port=port)
         self.client = client
-        #cin, cout, cerr = self.client.exec_command("tmux")
-        #print(cout.read())
 
     def closeConnection(self):
         self.client.close()
 
+    def startTmux(self):
+        cin, cout, cerr = self.client.exec_command("tmux")
+        print(cout.read().decode('utf-8'))
+
     def attach(self):
         cin, cout, cerr = self.client.exec_command("tmux attach")
-        print(cout.read())
+        print(cout.read().decode('utf-8'))
 
     def deattach(self):
         cin, cout, cerr = self.client.exec_command("tmux detach")
-        print(cout.read())
+        print(cout.read().decode('utf-8'))
 
     def run(self, script):
         cin, cout, cerr = self.client.exec_command(script)
-        print(cout.read())
+        print(cout.read().decode('utf-8'))
 
 
 
@@ -63,6 +65,18 @@ def CreateSSH(node):
     ssh = SSH(node, login, password)
     return ssh
 
+def test(node):
+    ssh = createSSH(node[0])
+    ssh.startTmux()
+    ssh.run("./a.out &")
+    ssh.deattach()
+    ssh.closeConnection()
+
+    ssh = createSSH(node[0])
+    ssh.attach()
+    ssh.run("exit")
+    ssh.deattach()
+    ssh.closeConnection()
 
 def CreateChain(chain):
     for node in chain:
@@ -95,3 +109,6 @@ if __name__ == "__main__":
     print("")
     for node in chain:
         print(node)
+
+    #CreateChain(chain)
+    test(chain[0])
