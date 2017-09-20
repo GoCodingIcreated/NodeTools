@@ -42,29 +42,6 @@ class SSH(object):
         print("Close")
         self.client.close()
 
-    def startTmux(self):
-        print("Start")
-        cin, cout, cerr = self.client.exec_command("tmux")
-        print(cout.read().decode('utf-8'))
-        print(cerr.read().decode('utf-8'))
-
-    def attach(self):
-        print("Attach")
-        cin, cout, cerr = self.client.exec_command("tmux attach")
-        print(cout.read().decode('utf-8'))
-        print(cerr.read().decode('utf-8'))
-
-    def deattach(self):
-        print("Deattach")
-        cin, cout, cerr = self.client.exec_command("tmux detach")
-        print(cout.read().decode('utf-8'))
-        print(cerr.read().decode('utf-8'))
-
-    def run(self, script):
-        print("Run")
-        cin, cout, cerr = self.client.exec_command(script)
-        print(cout.read().decode('utf-8'))
-        print(cerr.read().decode('utf-8'))
 
 
 
@@ -75,56 +52,57 @@ def CreateSSH(node):
     ssh = SSH(node, login, password)
     return ssh
 
-def test(node):
-    ssh = CreateSSH(node[0])
-    ssh.startTmux()
-    ssh.run("/home/nickolas/NodeTools/a.out &")
-    ssh.deattach()
-    ssh.closeConnection()
-
-    ssh = CreateSSH(node[0])
-    ssh.attach()
-    ssh.run("exit")
-    ssh.deattach()
-    ssh.closeConnection()
-
-
-def test2(node):
-    ssh = CreateSSH(node[0])
+def CreateShell(ssh):
     channel = ssh.client.get_transport().open_session()
-    pty = channel.get_pty()
+    channel.get_pty()
     time.sleep(1)
     shell = ssh.client.invoke_shell()
     shell.setblocking(0)
-
-
     time.sleep(1)
     print(shell.recv(10240).decode('utf-8'))
     shell.send("cd /home/nickolas/NodeTools/NodeTools \n")
+    return shell
+
+def attach(shell):
+    shell.send("tmux attach \n")
     time.sleep(1)
-    shell.send("tmux \n")
-    time.sleep(1)
-    shell.send("sudo ./ssh_socks_make.py 10.0.1.3 nickolas >temp \n")
-    time.sleep(1)
-    shell.send("455722\n")
-    time.sleep(10)
-    shell.send("455722\n")
+
+def detach(shell):
     shell.send("\x02\x64")
     time.sleep(1)
-    shell.send("head out\n")
+
+def tmux(shell):
+    shell.send("tmux \n")
     time.sleep(1)
-    time.sleep(3)
-    shell.send("tmux attach\n")
-    time.sleep(30)
-    shell.send("exit\n")
+
+def startSSHSocks(shell, script, password1, password2):
+    shell.send("sudo " + script);
+    time.sleep(1)
+    shell.send(password1 + '\n')
+    time.sleep(10)
+    shell.send(password2)
+    time.sleep(1)
+
+def closeSSHSocks(shell):
+    shell.send("exit")
     time.sleep(1)
     shell.send("\x03")
     time.sleep(1)
-    shell.send("head out\n")
-    time.sleep(1)
 
-    with open("temp", "w") as file:
-        print(shell.recv(10240).decode('utf-8'), file=file)
+def run(node):
+    if node[1] == "SSH":
+        ssh = CreateSSH(node[0])
+        shell = CreateShell(ssh)
+        tmux(shell)
+        startSSHSocks(shell, "./ssh_socks_make.py " + node[2] + '\n')
+        detach(shell)
+
+        time.sleep(30)
+
+        attach(shell)
+        closeSSHSocks(shell)
+        ssh.closeConnection()
+
 
 
 def CreateChain(chain):
@@ -160,4 +138,4 @@ if __name__ == "__main__":
         print(node)
 
     #CreateChain(chain)
-    test2(chain[0])
+    run(chain[0])
