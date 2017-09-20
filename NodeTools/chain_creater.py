@@ -6,6 +6,7 @@ import time
 
 nodes = {}
 scripts = []
+LOGFILE = 'log.out'
 
 def ParseChainConfig(config):
     commands = []
@@ -80,11 +81,11 @@ def startSSHSocks(shell, script, password1, password2):
     time.sleep(1)
     shell.send(password1 + '\n')
     time.sleep(10)
-    shell.send(password2)
+    shell.send(password2 + '\n')
     time.sleep(1)
 
 def closeSSHSocks(shell):
-    shell.send("exit")
+    shell.send("exit\n")
     time.sleep(1)
     shell.send("\x03")
     time.sleep(1)
@@ -103,6 +104,9 @@ def run(node):
         time.sleep(30)
 
         attach(shell)
+        output = shell.recv(100000).decode('utf-8')
+        with open(LOGFILE, "w") as file:
+            print(output, file=file)
         closeSSHSocks(shell)
         ssh.closeConnection()
 
