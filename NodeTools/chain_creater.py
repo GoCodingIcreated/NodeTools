@@ -2,6 +2,7 @@
 
 import sys
 import paramiko
+import time
 
 nodes = []
 scripts = []
@@ -87,6 +88,45 @@ def test(node):
     ssh.deattach()
     ssh.closeConnection()
 
+
+def test2(node):
+    ssh = CreateSSH(node[0])
+    channel = ssh.client.get_transport().open_session()
+    pty = channel.get_pty()
+    time.sleep(1)
+    shell = ssh.client.invoke_shell()
+    shell.setblocking(0)
+
+
+    time.sleep(1)
+    print(shell.recv(10240).decode('utf-8'))
+    shell.send("cd /home/nickolas/NodeTools/NodeTools \n")
+    time.sleep(1)
+    shell.send("tmux \n")
+    time.sleep(1)
+    shell.send("sudo ./ssh_socks_make.py 10.0.1.3 nickolas >temp \n")
+    time.sleep(1)
+    shell.send("455722\n")
+    time.sleep(10)
+    shell.send("455722\n")
+    shell.send("\x02\x64")
+    time.sleep(1)
+    shell.send("head out\n")
+    time.sleep(1)
+    time.sleep(3)
+    shell.send("tmux attach\n")
+    time.sleep(30)
+    shell.send("exit\n")
+    time.sleep(1)
+    shell.send("\x03")
+    time.sleep(1)
+    shell.send("head out\n")
+    time.sleep(1)
+
+    with open("temp", "w") as file:
+        print(shell.recv(10240).decode('utf-8'), file=file)
+
+
 def CreateChain(chain):
     for node in chain:
         ssh = CreateSSH(node[0])
@@ -120,4 +160,4 @@ if __name__ == "__main__":
         print(node)
 
     #CreateChain(chain)
-    test(chain[0])
+    test2(chain[0])
