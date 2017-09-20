@@ -1,6 +1,10 @@
 #!/usr/bin/python3
 
 import sys
+import paramiko
+
+nodes = []
+scripts = []
 
 def ParseChainConfig(config):
     commands = []
@@ -25,6 +29,52 @@ def ParseGlobalConfig(config):
     return commands
 
 
+class SSH(object):
+    def __init__(self, host ,login, password, port=23):
+        client = paramiko.SSHClient()
+        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        client.connect(hostname=host, username=login,
+                       password=password, port=port)
+        self.client = client
+        #cin, cout, cerr = self.client.exec_command("tmux")
+        #print(cout.read())
+
+    def closeConnection(self):
+        self.client.close()
+
+    def attach(self):
+        cin, cout, cerr = self.client.exec_command("tmux attach")
+        print(cout.read())
+
+    def deattach(self):
+        cin, cout, cerr = self.client.exec_command("tmux detach")
+        print(cout.read())
+
+    def run(self, script):
+        cin, cout, cerr = self.client.exec_command(script)
+        print(cout.read())
+
+
+
+
+def CreateSSH(node):
+    login = nodes[node][0]
+    password = nodes[node][1]
+    ssh = SSH(node, login, password)
+    return ssh
+
+
+def CreateChain(chain):
+    for node in chain:
+        ssh = CreateSSH(node[0])
+        #ssh.startScript(scripts[node])
+        ssh.run("ls -l")
+
+def DestroyChain(chain):
+    for node in chain:
+        ssh = CreateSSH(node)
+        ssh.stopScripts()
+
 
 if __name__ == "__main__":
     global_config = "config"
@@ -34,7 +84,9 @@ if __name__ == "__main__":
         chain_config = sys.argv[2]
 
 
-    nodes = ParseGlobalConfig(global_config)
+    nodes_list = ParseGlobalConfig(global_config)
+    nodes = { i[0] : (i[1], i[2]) for i in nodes_list }
+    print(nodes)
     chain = ParseChainConfig(chain_config)
 
     for node in nodes:
