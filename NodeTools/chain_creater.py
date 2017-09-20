@@ -38,23 +38,32 @@ class SSH(object):
         self.client = client
 
     def closeConnection(self):
+        print("Close")
         self.client.close()
 
     def startTmux(self):
+        print("Start")
         cin, cout, cerr = self.client.exec_command("tmux")
         print(cout.read().decode('utf-8'))
+        print(cerr.read().decode('utf-8'))
 
     def attach(self):
+        print("Attach")
         cin, cout, cerr = self.client.exec_command("tmux attach")
         print(cout.read().decode('utf-8'))
+        print(cerr.read().decode('utf-8'))
 
     def deattach(self):
+        print("Deattach")
         cin, cout, cerr = self.client.exec_command("tmux detach")
         print(cout.read().decode('utf-8'))
+        print(cerr.read().decode('utf-8'))
 
     def run(self, script):
+        print("Run")
         cin, cout, cerr = self.client.exec_command(script)
         print(cout.read().decode('utf-8'))
+        print(cerr.read().decode('utf-8'))
 
 
 
@@ -66,13 +75,13 @@ def CreateSSH(node):
     return ssh
 
 def test(node):
-    ssh = createSSH(node[0])
+    ssh = CreateSSH(node[0])
     ssh.startTmux()
-    ssh.run("./a.out &")
+    ssh.run("/home/nickolas/NodeTools/a.out &")
     ssh.deattach()
     ssh.closeConnection()
 
-    ssh = createSSH(node[0])
+    ssh = CreateSSH(node[0])
     ssh.attach()
     ssh.run("exit")
     ssh.deattach()
