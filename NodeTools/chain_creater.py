@@ -4,7 +4,7 @@ import sys
 import paramiko
 import time
 
-nodes = []
+nodes = {}
 scripts = []
 
 def ParseChainConfig(config):
@@ -60,7 +60,7 @@ def CreateShell(ssh):
     shell.setblocking(0)
     time.sleep(1)
     print(shell.recv(10240).decode('utf-8'))
-    shell.send("cd /home/nickolas/NodeTools/NodeTools \n")
+    shell.send("cd ./NodeTools/NodeTools \n")
     return shell
 
 def attach(shell):
@@ -94,7 +94,10 @@ def run(node):
         ssh = CreateSSH(node[0])
         shell = CreateShell(ssh)
         tmux(shell)
-        startSSHSocks(shell, "./ssh_socks_make.py " + node[2] + '\n')
+        target_ip = node[2].split(' ')[0]
+        target_password = nodes[target_ip][1]
+
+        startSSHSocks(shell, "./ssh_socks_make.py " + node[2] + '\n', nodes[node[0]][1], target_password)
         detach(shell)
 
         time.sleep(30)
