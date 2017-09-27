@@ -60,7 +60,8 @@ def CreateShell(ssh):
     shell = ssh.client.invoke_shell()
     shell.setblocking(0)
     time.sleep(1)
-    print(shell.recv(10240).decode('utf-8'))
+    with open(LOGFILE, "a") as file:
+        file.write(shell.recv(10240).decode('utf-8'))
     shell.send("cd ./NodeTools/NodeTools \n")
     return shell
 
@@ -187,6 +188,7 @@ def run(node):
 
 
 def destroy(node):
+    print("Destroy")
     if node[1] == "SSH":
         ssh = CreateSSH(node[0])
         shell = CreateShell(ssh)
@@ -225,14 +227,11 @@ def destroy(node):
 
 def CreateChain(chain):
     for node in chain:
-        ssh = CreateSSH(node[0])
-        #ssh.startScript(scripts[node])
-        ssh.run("ls -l")
+        run(node)
 
 def DestroyChain(chain):
     for node in chain:
-        ssh = CreateSSH(node)
-        ssh.stopScripts()
+        destroy(node)
 
 
 if __name__ == "__main__":
@@ -255,7 +254,7 @@ if __name__ == "__main__":
     for node in chain:
         print(node)
 
-    #CreateChain(chain)
-    run(chain[0])
-    time.sleep(360)
-    destroy(chain[0])
+    CreateChain(chain)
+
+    time.sleep(180)
+    DestroyChain(chain)
