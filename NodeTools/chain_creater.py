@@ -110,8 +110,21 @@ def startVPN(shell, script, password):
     shell.send(password + '\n')
     time.sleep(3)
 
+
 def closeVPN(shell):
     shell.send("\x03")
+    time.sleep(1)
+
+def addVPNroutingClient(shell, password):
+    shell.send("sudo ./vpn_routing.py client\n")
+    time.sleep(1)
+    shell.send(password + '\n')
+    time.sleep(1)
+
+def addVPNroutingServer(shell, password):
+    shell.send("sudo ./vpn_routing.py server\n")
+    time.sleep(1)
+    shell.send(password + '\n')
     time.sleep(1)
 
 def run(node):
@@ -158,10 +171,16 @@ def run(node):
 
         startVPN(shell, "./vpn_make.py " + node[2] + '\n', nodes[node[0]][1])
         detach(shell)
+        addVPNroutingClient(shell)
 
         output = shell.recv(100000).decode('utf-8')
         with open(LOGFILE, "a") as file:
             print(output, file=file)
+        ssh.closeConnection()
+
+        ssh = CreateSSH(node[2])
+        shell = CreateShell(ssh)
+        addVPNroutingServer(shell)
         ssh.closeConnection()
     else:
         return
