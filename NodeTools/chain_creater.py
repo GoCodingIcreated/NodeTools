@@ -132,10 +132,10 @@ def run(node):
         ssh = CreateSSH(node[0])
         shell = CreateShell(ssh)
         tmux(shell)
-        target_ip = node[2].split(' ')[0]
+        target_ip = node[2]
         target_password = nodes[target_ip][1]
 
-        startSSHSocks(shell, "./ssh_socks_make.py " + node[2] + '\n', nodes[node[0]][1], target_password)
+        startSSHSocks(shell, "./ssh_socks_make.py " + node[3] + '\n', nodes[node[0]][1], target_password)
         detach(shell)
 
         #time.sleep(30)
@@ -152,7 +152,7 @@ def run(node):
         shell = CreateShell(ssh)
         tmux(shell)
 
-        startSocks(shell, "./socks_make.py " + node[2] + '\n', nodes[node[0]][1])
+        startSocks(shell, "./socks_make.py " + node[3] + '\n', nodes[node[0]][1])
         detach(shell)
 
         #time.sleep(30)
@@ -169,9 +169,9 @@ def run(node):
         shell = CreateShell(ssh)
         tmux(shell)
 
-        startVPN(shell, "./vpn_make.py " + node[2] + '\n', nodes[node[0]][1])
+        startVPN(shell, "./vpn_make.py " + node[3] + '\n', nodes[node[0]][1])
         detach(shell)
-        addVPNroutingClient(shell)
+        addVPNroutingClient(shell, nodes[node[0]][1])
 
         output = shell.recv(100000).decode('utf-8')
         with open(LOGFILE, "a") as file:
@@ -180,7 +180,7 @@ def run(node):
 
         ssh = CreateSSH(node[2])
         shell = CreateShell(ssh)
-        addVPNroutingServer(shell)
+        addVPNroutingServer(shell, nodes[node[2]][1])
         ssh.closeConnection()
     else:
         return
