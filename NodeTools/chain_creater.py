@@ -15,8 +15,8 @@ def ParseChainConfig(config):
             try:
                 notcomment = line[:-1].split("#")[0]
                 command, argv = notcomment.split(";")[0:2]
-                ip, type = command.split(' ')[0:2]
-                commands.append((ip, type, argv))
+                ip, type, targetIp = command.split(' ')[0:3]
+                commands.append((ip, type, targetIp, argv))
             except ValueError:
                 pass
     return commands
