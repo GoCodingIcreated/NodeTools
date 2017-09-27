@@ -76,6 +76,10 @@ def tmux(shell):
     shell.send("tmux \n")
     time.sleep(1)
 
+def tmuxExit(shell):
+    shell.send("exit\n")
+    time.sleep(1)
+
 def startSSHSocks(shell, script, password1, password2):
     shell.send("sudo " + script);
     time.sleep(1)
@@ -91,9 +95,11 @@ def closeSSHSocks(shell):
     time.sleep(1)
 
 def startSocks(shell, script, password):
+
     shell.send("sudo " + script);
     time.sleep(1)
     shell.send(password + '\n')
+    time.sleep(5)
 
 def closeSocks(shell):
     shell.send("\x03")
@@ -111,13 +117,13 @@ def run(node):
         startSSHSocks(shell, "./ssh_socks_make.py " + node[2] + '\n', nodes[node[0]][1], target_password)
         detach(shell)
 
-        time.sleep(30)
+        #time.sleep(30)
 
-        attach(shell)
+        #attach(shell)
         output = shell.recv(100000).decode('utf-8')
         with open(LOGFILE, "w") as file:
             print(output, file=file)
-        closeSSHSocks(shell)
+        #closeSSHSocks(shell)
         ssh.closeConnection()
 
     elif node[1] == "SOCKS":
@@ -128,13 +134,13 @@ def run(node):
         startSocks(shell, "./socks_make.py " + node[2] + '\n', nodes[node[0]][1])
         detach(shell)
 
-        time.sleep(30)
+        #time.sleep(30)
 
-        attach(shell)
+        #attach(shell)
         output = shell.recv(100000).decode('utf-8')
         with open(LOGFILE, "w") as file:
             print(output, file=file)
-        closeSocks(shell)
+        #closeSocks(shell)
         ssh.closeConnection()
 
     elif node[1] == "VPN":
@@ -143,6 +149,37 @@ def run(node):
         return
 
 
+def destroy(node):
+    if node[1] == "SSH":
+        ssh = CreateSSH(node[0])
+        shell = CreateShell(ssh)
+
+        attach(shell)
+        closeSSHSocks(shell)
+        tmuxExit(shell)
+        output = shell.recv(100000).decode('utf-8')
+        with open(LOGFILE, "w") as file:
+            print(output, file=file)
+
+        ssh.closeConnection()
+
+    elif node[1] == "SOCKS":
+        ssh = CreateSSH(node[0])
+        shell = CreateShell(ssh)
+
+        attach(shell)
+        closeSocks(shell)
+        tmuxExit(shell)
+        output = shell.recv(100000).decode('utf-8')
+        with open(LOGFILE, "w") as file:
+            print(output, file=file)
+
+        ssh.closeConnection()
+
+    elif node[1] == "VPN":
+        pass
+    else:
+        return
 
 def CreateChain(chain):
     for node in chain:
@@ -178,3 +215,5 @@ if __name__ == "__main__":
 
     #CreateChain(chain)
     run(chain[0])
+    time.sleep(30)
+    destroy(chain[0])
