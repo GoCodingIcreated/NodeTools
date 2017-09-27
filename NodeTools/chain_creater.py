@@ -108,7 +108,7 @@ def startVPN(shell, script, password):
     shell.send("sudo " + script)
     time.sleep(1)
     shell.send(password + '\n')
-    time.sleep(3)
+    time.sleep(10)
 
 
 def closeVPN(shell):
@@ -143,7 +143,7 @@ def run(node):
         #attach(shell)
         output = shell.recv(100000).decode('utf-8')
         with open(LOGFILE, "a") as file:
-            print(output, file=file)
+            file.write(output)
         #closeSSHSocks(shell)
         ssh.closeConnection()
 
@@ -160,7 +160,7 @@ def run(node):
         #attach(shell)
         output = shell.recv(100000).decode('utf-8')
         with open(LOGFILE, "a") as file:
-            print(output, file=file)
+            file.write(output)
         #closeSocks(shell)
         ssh.closeConnection()
 
@@ -175,7 +175,7 @@ def run(node):
 
         output = shell.recv(100000).decode('utf-8')
         with open(LOGFILE, "a") as file:
-            print(output, file=file)
+            file.write(output)
         ssh.closeConnection()
 
         ssh = CreateSSH(node[2])
@@ -196,8 +196,7 @@ def destroy(node):
         tmuxExit(shell)
         output = shell.recv(100000).decode('utf-8')
         with open(LOGFILE, "a") as file:
-            print(output, file=file)
-
+            file.write(output)
         ssh.closeConnection()
 
     elif node[1] == "SOCKS":
@@ -209,8 +208,7 @@ def destroy(node):
         tmuxExit(shell)
         output = shell.recv(100000).decode('utf-8')
         with open(LOGFILE, "a") as file:
-            print(output, file=file)
-
+            file.write(output)
         ssh.closeConnection()
 
     elif node[1] == "VPN":
@@ -221,8 +219,7 @@ def destroy(node):
         tmuxExit(shell)
         output = shell.recv(100000).decode('utf-8')
         with open(LOGFILE, "a") as file:
-            print("-" * 10)
-            print(output, file)
+            file.write(output)
     else:
         return
 
@@ -260,5 +257,5 @@ if __name__ == "__main__":
 
     #CreateChain(chain)
     run(chain[0])
-    time.sleep(30)
+    time.sleep(360)
     destroy(chain[0])
