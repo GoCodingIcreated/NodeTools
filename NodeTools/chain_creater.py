@@ -90,6 +90,16 @@ def closeSSHSocks(shell):
     shell.send("\x03")
     time.sleep(1)
 
+def startSocks(shell, script, password):
+    shell.send("sudo " + script);
+    time.sleep(1)
+    shell.send(password + '\n')
+
+def closeSocks(shell):
+    shell.send("\x03")
+    time.sleep(1)
+
+
 def run(node):
     if node[1] == "SSH":
         ssh = CreateSSH(node[0])
@@ -109,6 +119,28 @@ def run(node):
             print(output, file=file)
         closeSSHSocks(shell)
         ssh.closeConnection()
+
+    elif node[1] == "SOCKS":
+        ssh = CreateSSH(node[0])
+        shell = CreateShell(ssh)
+        tmux(shell)
+
+        startSocks(shell, "./socks_make.py " + node[2] + '\n', nodes[node[0]][1])
+        detach(shell)
+
+        time.sleep(30)
+
+        attach(shell)
+        output = shell.recv(100000).decode('utf-8')
+        with open(LOGFILE, "w") as file:
+            print(output, file=file)
+        closeSocks(shell)
+        ssh.closeConnection()
+
+    elif node[1] == "VPN":
+        pass
+    else:
+        return
 
 
 
