@@ -6,7 +6,7 @@ import time
 import json
 
 nodes = {}
-scripts = []
+
 
 global_config = "config.json"
 chain_config = "config_chain.json"
@@ -22,7 +22,7 @@ DIR = "./NodeTools/NodeTools/"
 
 def ParseChainConfig(config):
     with open(config, "r") as file:
-        data = json.load(config)
+        data = json.load(file)
     return data["chain"]
 
 def ParseGlobalConfig(config):
@@ -31,9 +31,8 @@ def ParseGlobalConfig(config):
         SCRIPT_START_SSH, SCRIPT_START_VPN_ROUTING,\
         DIR
     with open(config, "r") as file:
-        data = json.load(config)
-    CONFIG_SSH = data["CONFIG_SSH"]
-    CONFIG_SOCKS = data["CONFIG_SOCKS"]
+        data = json.load(file)
+
     LOGFILE = data["LOGFILE"]
     SCRIPT_START_SSH = data["SCRIPT_START_SSH"]
     SCRIPT_START_SOCKS = data["SCRIPT_START_SOCKS"]
@@ -74,7 +73,7 @@ def CreateShell(ssh):
     time.sleep(1)
     with open(LOGFILE, "a") as file:
         file.write(shell.recv(10240).decode('utf-8'))
-    shell.send(DIR + "\n")
+    shell.send("cd " + DIR + "\n")
     return shell
 
 def attach(shell):
@@ -240,6 +239,7 @@ def DestroyChain(chain):
 
 
 def SetUp(global_con = global_config):
+    global nodes
     nodes_list = ParseGlobalConfig(global_config)
     nodes = { i[0] : (i[1], i[2]) for i in nodes_list }
     print(nodes)
