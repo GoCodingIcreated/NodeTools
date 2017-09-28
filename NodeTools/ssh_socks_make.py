@@ -3,25 +3,35 @@
 import os
 import sys
 import time
+import json
+
+CONFIG = "ssh_socks_make_config.json"
 
 if __name__ == "__main__":
-    ip_ssh = "10.0.1.1"
-    username = "nickolas"
+    if len(sys.argv) > 1:
+        CONFIG = sys.argv[1]
 
-    ip_gw = "10.0.1.1"
-    ip_virt1 = "10.0.0.1"
-    netmask_virt1 = "255.255.255.0"
-    ip_virt2 = "10.0.0.2"
-    netmask_virt2 = "255.255.255.0"
-    ip_dns = "8.8.8.8"
 
-    tun = "tun3"
+    with open(CONFIG, "r") as file:
+        data = json.load(file)
 
-    socks_server_addr = "localhost:1080"
+    ip_ssh = data["ip_ssh"]
+    username = data["username"]
 
-    if len(sys.argv) > 2:
-        ip_ssh = sys.argv[1]
-        username = sys.argv[2]
+    ip_gw = data["ip_gw"]
+    ip_virt1 = data["ip_virt1"]
+    netmask_virt1 = data["netmask_virt1"]
+    ip_virt2 = data["ip_virt2"]
+    netmask_virt2 = data["netmask_virt2"]
+    ip_dns = data["ip_dns"]
+
+    tun = data["tun"]
+
+    socks_server_addr = data["socks_server_addr"]
+
+    if len(sys.argv) == 4:
+        socks_server_addr = sys.argv[2]
+        username = sys.argv[3]
 
     os.system("ifconfig tun2 down")
     os.system("ifconfig tun3 down")

@@ -3,9 +3,10 @@
 import os
 import sys
 
-config = ""
+CONFIG = ""
 
-if len(sys.argv) > 1:
-    config = sys.argv[1]
-print(config)
-os.system("openvpn --config %s" % (config))
+
+if __name__ == "__main__":
+    if len(sys.argv) > 1:
+        CONFIG = sys.argv[1]
+    os.system("openvpn --config %s" % (CONFIG))

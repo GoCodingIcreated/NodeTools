@@ -4,11 +4,12 @@ import os
 import sys
 import json
 
-CONFIG = "vpn_routing_config"
+CONFIG = "vpn_routing_config.json"
 
 if __name__ == "__main__":
-    #ip = "10.8.1.0/24"
-    #dev = "enp0s8"
+    if len(sys.argv) > 1:
+        CONFIG = sys.argv[1]
+
     with open(CONFIG, "r") as file:
         data = json.load(file)
     if len(sys.argv) > 1:

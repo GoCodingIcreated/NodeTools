@@ -3,32 +3,44 @@
 import sys
 import paramiko
 import time
+import json
 
 nodes = {}
 scripts = []
+
+global_config = "config.json"
+chain_config = "config_chain.json"
+
+CONFIG_SSH = "ssh_socks_make_config.json"
+CONFIG_SOCKS = "socks_make_config.json"
 LOGFILE = 'log.out'
+SCRIPT_START_SSH = "./ssh_socks_make.py %s " % CONFIG_SSH
+SCRIPT_START_SOCKS = "./socks_make.py %s " % CONFIG_SOCKS
+SCRIPT_START_VPN = "./vpn_make.py "
+SCRIPT_START_VPN_ROUTING = "./vpn_routing.py "
+DIR = "./NodeTools/NodeTools/"
 
 def ParseChainConfig(config):
-    commands = []
     with open(config, "r") as file:
-        for line in file.readlines():
-            try:
-                notcomment = line[:-1].split("#")[0]
-                command, argv = notcomment.split(";")[0:2]
-                ip, type, targetIp = command.split(' ')[0:3]
-                commands.append((ip, type, targetIp, argv))
-            except ValueError:
-                pass
-    return commands
+        data = json.load(config)
+    return data["chain"]
 
 def ParseGlobalConfig(config):
-    commands = []
+    global CONFIG_SOCKS, CONFIG_SSH, LOGFILE, \
+        SCRIPT_START_VPN, SCRIPT_START_SOCKS,\
+        SCRIPT_START_SSH, SCRIPT_START_VPN_ROUTING,\
+        DIR
     with open(config, "r") as file:
-        for line in file.readlines():
-            command = line[:-1].split("#")[0]
-            ip, login, pswd = command.split(" ")[0:3]
-            commands.append((ip, login, pswd))
-    return commands
+        data = json.load(config)
+    CONFIG_SSH = data["CONFIG_SSH"]
+    CONFIG_SOCKS = data["CONFIG_SOCKS"]
+    LOGFILE = data["LOGFILE"]
+    SCRIPT_START_SSH = data["SCRIPT_START_SSH"]
+    SCRIPT_START_SOCKS = data["SCRIPT_START_SOCKS"]
+    SCRIPT_START_VPN = data["SCRIPT_START_VPN"]
+    SCRIPT_START_VPN_ROUTING = data["SCRIPT_START_VPN_ROUTING"]
+    DIR = data["DIR"]
+    return data["pull"]
 
 
 class SSH(object):
@@ -62,7 +74,7 @@ def CreateShell(ssh):
     time.sleep(1)
     with open(LOGFILE, "a") as file:
         file.write(shell.recv(10240).decode('utf-8'))
-    shell.send("cd ./NodeTools/NodeTools \n")
+    shell.send(DIR + "\n")
     return shell
 
 def attach(shell):
@@ -117,13 +129,13 @@ def closeVPN(shell):
     time.sleep(1)
 
 def addVPNroutingClient(shell, password):
-    shell.send("sudo ./vpn_routing.py client\n")
+    shell.send("sudo " + SCRIPT_START_VPN_ROUTING  + "client\n")
     time.sleep(1)
     shell.send(password + '\n')
     time.sleep(1)
 
 def addVPNroutingServer(shell, password):
-    shell.send("sudo ./vpn_routing.py server\n")
+    shell.send("sudo " + SCRIPT_START_VPN_ROUTING + "server\n")
     time.sleep(1)
     shell.send(password + '\n')
     time.sleep(1)
@@ -136,16 +148,13 @@ def run(node):
         target_ip = node[2]
         target_password = nodes[target_ip][1]
 
-        startSSHSocks(shell, "./ssh_socks_make.py " + node[3] + '\n', nodes[node[0]][1], target_password)
+        startSSHSocks(shell, SCRIPT_START_SSH + node[3] + '\n', nodes[node[0]][1], target_password)
         detach(shell)
 
-        #time.sleep(30)
-
-        #attach(shell)
         output = shell.recv(100000).decode('utf-8')
         with open(LOGFILE, "a") as file:
             file.write(output)
-        #closeSSHSocks(shell)
+
         ssh.closeConnection()
 
     elif node[1] == "SOCKS":
@@ -153,16 +162,12 @@ def run(node):
         shell = CreateShell(ssh)
         tmux(shell)
 
-        startSocks(shell, "./socks_make.py " + node[3] + '\n', nodes[node[0]][1])
+        startSocks(shell, SCRIPT_START_SOCKS + node[3] + '\n', nodes[node[0]][1])
         detach(shell)
 
-        #time.sleep(30)
-
-        #attach(shell)
         output = shell.recv(100000).decode('utf-8')
         with open(LOGFILE, "a") as file:
             file.write(output)
-        #closeSocks(shell)
         ssh.closeConnection()
 
     elif node[1] == "VPN":
@@ -170,7 +175,7 @@ def run(node):
         shell = CreateShell(ssh)
         tmux(shell)
 
-        startVPN(shell, "./vpn_make.py " + node[3] + '\n', nodes[node[0]][1])
+        startVPN(shell, SCRIPT_START_VPN + node[3] + '\n', nodes[node[0]][1])
         detach(shell)
         addVPNroutingClient(shell, nodes[node[0]][1])
 
@@ -234,25 +239,23 @@ def DestroyChain(chain):
         destroy(node)
 
 
+def SetUp(global_con = global_config):
+    nodes_list = ParseGlobalConfig(global_config)
+    nodes = { i[0] : (i[1], i[2]) for i in nodes_list }
+    print(nodes)
+
+
 if __name__ == "__main__":
-    global_config = "config"
-    chain_config = "config_chain"
     if len(sys.argv) == 3:
         global_config = sys.argv[1]
         chain_config = sys.argv[2]
 
-
-    nodes_list = ParseGlobalConfig(global_config)
-    nodes = { i[0] : (i[1], i[2]) for i in nodes_list }
-    print(nodes)
+    SetUp(global_config)
     chain = ParseChainConfig(chain_config)
 
     for node in nodes:
         print(node)
 
-    print("")
-    for node in chain:
-        print(node)
 
     CreateChain(chain)
 
