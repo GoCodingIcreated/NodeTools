@@ -1,10 +1,23 @@
-#!/bin/sh
+#!/bin/bash
+
+
+function package_exists {
+    dpkg -l "$1" &> /dev/null
+    return $?
+}
+
+declare -a arr=("git" "ssh" "openvpn" "easy-rsa" "dante-server" "python3")
 
 apt-get update
-apt-get install -y git
-apt-get install -y ssh
+for i in "${arr[@]}"
+do
+    apt-get install -y $i
+    if  ! package_exists $i ; then
+        echo "Abort : $i can't been installed"
+        exit 1
+    fi
+done
 
-apt-get install -y dante-server
 rm /etc/danted.conf
 a = $(ifconfig | grep "eth\|enp" | head -n 1 | cut -d " " -f 1)
 

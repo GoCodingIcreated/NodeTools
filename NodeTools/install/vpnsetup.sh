@@ -1,9 +1,5 @@
 #!/bin/bash
 
-PASSWORD='123123123'
-
-apt-get update
-apt-get install -y openvpn easy-rsa 
 
 make-cadir ~/openvpn-ca
 chmod 777 ~/openvpn-ca
@@ -24,31 +20,20 @@ yes '' | ./build-ca
 
 openvpn --genkey --secret keys/ta.key
 
-# moved into client script
-#cd ~/openvpn-ca
-#source ./vars
-#./build-key --batch client1
-
-#no need ?
-#cd ~/openvpn-ca
-#source ./vars
-#echo -e $PASSWORD'\n'$PASSWORD'\n' | ./build-key-pass --batch client1
-
 
 cd ~/openvpn-ca/keys
-sudo cp ca.crt ca.key server.crt server.key ta.key dh2048.pem /etc/openvpn
+cp ca.crt ca.key server.crt server.key ta.key dh2048.pem /etc/openvpn
 
-gunzip -c /usr/share/doc/openvpn/examples/sample-config-files/server.conf.gz | sudo tee /etc/openvpn/server.conf
+gunzip -c /usr/share/doc/openvpn/examples/sample-config-files/server.conf.gz | tee /etc/openvpn/server.conf
 
 cat /etc/openvpn/server.conf | sed 's/;tls-auth[0-9a-zA-Z#\. ]*/tls-auth ta.key 0\nkey-direction 0/; s/;cipher AES-128-CBC/cipher AES-128-CBC\nauth SHA256/; s/;user nobody/user nobody/; s/;group/group/' > tempfile
 mv tempfile /etc/openvpn/server.conf
 
 
-# decomment /etc/openvpn/server.conf
 
 echo "net.ipv4.ip_forward=1" >> /etc/sysctl.conf
 
-sudo systemctl start openvpn@server
+systemctl start openvpn@server
 
 mkdir -p ~/client-configs/files
 
@@ -59,21 +44,23 @@ echo -e "\nkey-direction 1\n" >>tempfile
 echo -e "\n# script-security 2\n# up /etc/openvpn/update-resolve-conf\n# down /etc/openvn/update-resolve-conf\n" >>tempfile
 mv tempfile ~/client-configs/base.conf
 
-mkdir ~/client-configs/files
 touch ~/client-configs/make_config.sh
 chmod 700 ~/client-configs/make_config.sh
-echo "#!/bin/bash" > ~/client-configs/make_config.sh
-echo "# First argument: Client identifier" >> ~/client-configs/make_config.sh
-echo "KEY_DIR=~/openvpn-ca/keys" >> ~/client-configs/make_config.sh
-echo "OUTPUT_DIR=~/client-configs/files" >> ~/client-configs/make_config.sh
-echo "BASE_CONFIG=~/client-configs/base.conf" >> ~/client-configs/make_config.sh
-echo "cat \${BASE_CONFIG} \\" >> ~/client-configs/make_config.sh
-echo "<(echo -e '<ca>') \\" >> ~/client-configs/make_config.sh
-echo "\${KEY_DIR}/ca.crt \\" >> ~/client-configs/make_config.sh
-echo "<(echo -e '</ca>\\n<cert>') \\" >> ~/client-configs/make_config.sh
-echo "\${KEY_DIR}/\${1}.key \\" >> ~/client-configs/make_config.sh
-echo "<(echo -e '</key>\\n<tls-auth>') \\" >> ~/client-configs/make_config.sh
-echo "\${KEY_DIR}/ta.key \\" >> ~/client-configs/make_config.sh
-echo "<(echo -e '</tls-auth>') \\" >> ~/client-configs/make_config.sh
-echo "> \${OUTPUT_DIR}/\${1}.ovpn" >> ~/client-configs/make_config.sh
+
+echo -e "#!/bin/bash\n"\
+"# First argument: Client identifier\n"\
+"KEY_DIR=~/openvpn-ca/keys\n"\
+"OUTPUT_DIR=~/client-configs/files\n"\
+"BASE_CONFIG=~/client-configs/base.conf\n"\
+"cat \${BASE_CONFIG} \ \n"\
+"\t<(echo -e '<ca>') \ \n"\
+"\t\${KEY_DIR}/ca.crt \ \n"\
+"\t<(echo -e '</ca>\\\n<cert>') \ \n"\
+"\t\${KEY_DIR}/\${1}.crt \ \n"\
+"\t<(echo -e '</cert>\\\n<key>') \ \n"\
+"\t\${KEY_DIR}/\${1}.key \ \n"\
+"\t<(echo -e '</key>\\\n<tls-auth>') \ \n"\
+"\t\${KEY_DIR}/ta.key \ \n"\
+"\t<(echo -e '</tls-auth>') \ \n"\
+"\t> \${OUTPUT_DIR}/\${1}.ovpn\n" >~/client-configs/make_config.sh
 
