@@ -24,9 +24,10 @@ yes '' | ./build-ca
 
 openvpn --genkey --secret keys/ta.key
 
-cd ~/openvpn-ca
-source ./vars
-./build-key --batch client1
+# moved into client script
+#cd ~/openvpn-ca
+#source ./vars
+#./build-key --batch client1
 
 #no need ?
 #cd ~/openvpn-ca
@@ -53,6 +54,26 @@ mkdir -p ~/client-configs/files
 
 cp /usr/share/doc/openvpn/examples/sample-config-files/client.conf ~/client-configs/base.conf
 
-cat ~/client-configs/base.conf | sed 's/;cipher AES-128-CBC/cipher AES-128-CBC\nauth SHA256/; s/;user nobody/user nobody/; s/;group/group/' >tempfile
-echo \n"key-direction 1"\n >>tempfile
+cat ~/client-configs/base.conf | sed 's/;cipher AES-128-CBC/cipher AES-128-CBC\nauth SHA256/; s/;user nobody/user nobody/; s/;group/group/; s/ca ca.crt/;ca ca.crt/; s/cert client.crt/;cert client.crt/; s/key client.key/;key client.key/' >tempfile
+echo -e "\nkey-direction 1\n" >>tempfile
+echo -e "\n# script-security 2\n# up /etc/openvpn/update-resolve-conf\n# down /etc/openvn/update-resolve-conf\n" >>tempfile
 mv tempfile ~/client-configs/base.conf
+
+mkdir ~/client-configs/files
+touch ~/client-configs/make_config.sh
+chmod 700 ~/client-configs/make_config.sh
+echo "#!/bin/bash" > ~/client-configs/make_config.sh
+echo "# First argument: Client identifier" >> ~/client-configs/make_config.sh
+echo "KEY_DIR=~/openvpn-ca/keys" >> ~/client-configs/make_config.sh
+echo "OUTPUT_DIR=~/client-configs/files" >> ~/client-configs/make_config.sh
+echo "BASE_CONFIG=~/client-configs/base.conf" >> ~/client-configs/make_config.sh
+echo "cat \${BASE_CONFIG} \\" >> ~/client-configs/make_config.sh
+echo "<(echo -e '<ca>') \\" >> ~/client-configs/make_config.sh
+echo "\${KEY_DIR}/ca.crt \\" >> ~/client-configs/make_config.sh
+echo "<(echo -e '</ca>\\n<cert>') \\" >> ~/client-configs/make_config.sh
+echo "\${KEY_DIR}/\${1}.key \\" >> ~/client-configs/make_config.sh
+echo "<(echo -e '</key>\\n<tls-auth>') \\" >> ~/client-configs/make_config.sh
+echo "\${KEY_DIR}/ta.key \\" >> ~/client-configs/make_config.sh
+echo "<(echo -e '</tls-auth>') \\" >> ~/client-configs/make_config.sh
+echo "> \${OUTPUT_DIR}/\${1}.ovpn" >> ~/client-configs/make_config.sh
+
