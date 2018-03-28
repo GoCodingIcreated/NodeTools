@@ -52,3 +52,7 @@ sudo systemctl start openvpn@server
 mkdir -p ~/client-configs/files
 
 cp /usr/share/doc/openvpn/examples/sample-config-files/client.conf ~/client-configs/base.conf
+
+cat ~/client-configs/base.conf | sed 's/;cipher AES-128-CBC/cipher AES-128-CBC\nauth SHA256/; s/;user nobody/user nobody/; s/;group/group/' >tempfile
+echo \n"key-direction 1"\n >>tempfile
+mv tempfile ~/client-configs/base.conf
