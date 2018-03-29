@@ -1,8 +1,8 @@
 #!/bin/bash
 
-cd ~/openvpn-ca
+cd $OPENVPN_CA_DIR
 source ./vars
 
 ./build-key client2
-cd ~/client-configs
+cd $OPENVPN_CLIENT_CONFIG_DIR
 ./make_config.sh client2
