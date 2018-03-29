@@ -6,6 +6,8 @@ function package_exists {
     return $?
 }
 
+source $1
+
 declare -a arr=("git" "ssh" "openvpn" "easy-rsa" "dante-server" "python3")
 
 apt-get update
@@ -19,10 +21,9 @@ do
 done
 
 rm /etc/danted.conf
-a = $(ifconfig | grep "eth\|enp" | head -n 1 | cut -d " " -f 1)
 
-echo "internal: 10.0.1.1 port = 1080
-external:"$a" method: username none
+echo "internal: $IP_INTERNAL port = 1080
+external:$IP_EXTERNAL method: username none
 user.privileged: root
 user.notprivileged: nobody
 client pass {
@@ -38,13 +39,13 @@ pass {
 
 " > /etc/danted.conf
 service danted restart
-cd $HOME
-mkdir badvpn-build
-cd badvpn-build
+mkdir $BADVPN_PATH
+cd $BADVPN_PATH
 git clone https://github.com/ambrop72/badvpn.git
 apt-get install -y cmake
-cmake ~/badvpn-build/badvpn/ -DBUILD_NOTHING_BY_DEFAULT=1 -DBUILD_TUN2SOCKS=1
+cmake $BADVPN_PATH/badvpn/ -DBUILD_NOTHING_BY_DEFAULT=1 -DBUILD_TUN2SOCKS=1
 make
-ln -s $HOME/badvpn-build/tun2socks/badvpn-tun2socks /usr/bin/badvpn-tun2socks
+rm /usr/bin/badvpn-tun2socks 2> /dev/null
+ln -s $BADVPN_PATH/tun2socks/badvpn-tun2socks /usr/bin/badvpn-tun2socks
 
 

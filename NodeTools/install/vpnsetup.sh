@@ -25,7 +25,7 @@ openvpn --genkey --secret keys/ta.key
 cd $OPENVPN_CA_DIR/keys
 cp ca.crt ca.key server.crt server.key ta.key dh2048.pem /etc/openvpn
 
-gunzip -c /usr/share/doc/openvpn/examples/sample-config-files/server.conf.gz | tee /etc/openvpn/server.conf
+gunzip -c /usr/share/doc/openvpn/examples/sample-config-files/server.conf.gz | tee /etc/openvpn/server.conf >/dev/null
 
 cat /etc/openvpn/server.conf | sed 's/;tls-auth[0-9a-zA-Z#\. ]*/tls-auth ta.key 0\nkey-direction 0/; s/;cipher AES-128-CBC/cipher AES-128-CBC\nauth SHA256/; s/;user nobody/user nobody/; s/;group/group/' > tempfile
 mv tempfile /etc/openvpn/server.conf
@@ -40,7 +40,7 @@ mkdir -p $OPENVPN_CLIENT_CONFIG_DIR/files
 
 cp /usr/share/doc/openvpn/examples/sample-config-files/client.conf $OPENVPN_CLIENT_CONFIG_DIR/base.conf
 
-cat $OPENVPN_CLIENT_CONFIG_DIR/base.conf | sed 's/my-server-1/$OPENVPN_IP_SERVER; s/;cipher AES-128-CBC/cipher AES-128-CBC\nauth SHA256/; s/;user nobody/user nobody/; s/;group/group/; s/ca ca.crt/;ca ca.crt/; s/cert client.crt/;cert client.crt/; s/key client.key/;key client.key/' >tempfile
+cat $OPENVPN_CLIENT_CONFIG_DIR/base.conf | sed 's/my-server-1/'$OPENVPN_IP_SERVER'/; s/;cipher AES-128-CBC/cipher AES-128-CBC\nauth SHA256/; s/;user nobody/user nobody/; s/;group/group/; s/ca ca.crt/;ca ca.crt/; s/cert client.crt/;cert client.crt/; s/key client.key/;key client.key/' >tempfile
 echo -e "\nkey-direction 1\n" >>tempfile
 echo -e "\n# script-security 2\n# up /etc/openvpn/update-resolve-conf\n# down /etc/openvn/update-resolve-conf\n" >>tempfile
 mv tempfile $OPENVPN_CLIENT_CONFIG_DIR/base.conf
