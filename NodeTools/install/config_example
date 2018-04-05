@@ -1,4 +1,3 @@
-BADVPN_PATH=/home/nickolas/badvpn-tun2socks
 IP_EXTERNAL=10.0.1.3
 IP_INTERNAL=10.0.1.3
 OPENVPN_CA_DIR=/home/nickolas/openvpn-ca
