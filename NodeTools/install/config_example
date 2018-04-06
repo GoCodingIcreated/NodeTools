@@ -3,3 +3,4 @@ IP_INTERNAL=10.0.1.3
 OPENVPN_CA_DIR=/home/nickolas/openvpn-ca
 OPENVPN_CLIENT_CONFIG_DIR=/home/nickolas/client-configs
 OPENVPN_IP_SERVER=10.0.1.3
+CLIENT_CONFIG_NAME=client4

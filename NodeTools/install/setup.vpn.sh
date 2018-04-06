@@ -51,7 +51,7 @@ chmod 766 $OPENVPN_CLIENT_CONFIG_DIR/make_config.sh
 
 echo -e "#!/bin/bash\n"\
 "# First argument: Client identifier\n"\
-"KEY_DIR=$OPENVPN_CLIENT_CONFIG_DIR/keys\n"\
+"KEY_DIR=$OPENVPN_CA_DIR/keys\n"\
 "OUTPUT_DIR=$OPENVPN_CLIENT_CONFIG_DIR/files\n"\
 "BASE_CONFIG=$OPENVPN_CLIENT_CONFIG_DIR/base.conf\n"\
 "cat \${BASE_CONFIG}" "\\""\\\n"\
