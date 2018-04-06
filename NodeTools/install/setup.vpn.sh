@@ -46,22 +46,22 @@ echo -e "\n# script-security 2\n# up /etc/openvpn/update-resolve-conf\n# down /e
 mv tempfile $OPENVPN_CLIENT_CONFIG_DIR/base.conf
 
 touch $OPENVPN_CLIENT_CONFIG_DIR/make_config.sh
-chmod 700 $OPENVPN_CLIENT_CONFIG_DIR/make_config.sh
+chmod 766 $OPENVPN_CLIENT_CONFIG_DIR/make_config.sh
+
 
 echo -e "#!/bin/bash\n"\
 "# First argument: Client identifier\n"\
-"KEY_DIR=~/openvpn-ca/keys\n"\
+"KEY_DIR=$OPENVPN_CLIENT_CONFIG_DIR/keys\n"\
 "OUTPUT_DIR=$OPENVPN_CLIENT_CONFIG_DIR/files\n"\
 "BASE_CONFIG=$OPENVPN_CLIENT_CONFIG_DIR/base.conf\n"\
-"cat \${BASE_CONFIG} \ \n"\
-"\t<(echo -e '<ca>') \ \n"\
-"\t\${KEY_DIR}/ca.crt \ \n"\
-"\t<(echo -e '</ca>\\\n<cert>') \ \n"\
-"\t\${KEY_DIR}/\${1}.crt \ \n"\
-"\t<(echo -e '</cert>\\\n<key>') \ \n"\
-"\t\${KEY_DIR}/\${1}.key \ \n"\
-"\t<(echo -e '</key>\\\n<tls-auth>') \ \n"\
-"\t\${KEY_DIR}/ta.key \ \n"\
-"\t<(echo -e '</tls-auth>') \ \n"\
+"cat \${BASE_CONFIG}" "\\""\\\n"\
+"\t<(echo -e '<ca>')" "\\""\\\n"\
+"\t\${KEY_DIR}/ca.crt" "\\""\\\n"\
+"\t<(echo -e '</ca>\\\n<cert>')" "\\""\\\n"\
+"\t\${KEY_DIR}/\${1}.crt" "\\""\\\n"\
+"\t<(echo -e '</cert>\\\n<key>')" "\\""\\\n"\
+"\t\${KEY_DIR}/\${1}.key" "\\""\\\n"\
+"\t<(echo -e '</key>\\\n<tls-auth>')" "\\""\\\n"\
+"\t\${KEY_DIR}/ta.key" "\\""\\\n"\
+"\t<(echo -e '</tls-auth>')" "\\""\\\n"\
 "\t> \${OUTPUT_DIR}/\${1}.ovpn\n" >$OPENVPN_CLIENT_CONFIG_DIR/make_config.sh
-
