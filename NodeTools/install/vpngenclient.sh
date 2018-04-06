@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source $1
+
 cd $OPENVPN_CA_DIR
 source ./vars
 
