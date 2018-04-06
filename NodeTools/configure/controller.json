@@ -1,0 +1,19 @@
+{
+    "network_interface_name": "enp0s3",
+    "port": 2018,
+    "nodes":
+    [
+        {
+            "ip_addr": "172.17.1.17",
+            "port": 2018
+        },
+        {
+            "ip_addr": "172.17.1.22",
+            "port": 2018
+        },
+        {
+            "ip_addr": "172.17.1.29",
+            "port": 2018
+        }
+    ]
+}
