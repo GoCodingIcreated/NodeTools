@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+enum Command {
+    GET_STATUS = 0;
+    SET_ID = 1;
+    CONNECT_NEXT = 2;
+    DESTROY = 3;
+}
+
+enum Status {
+    UNKNOWN = 0;
+    OK = 1;
+    NOT_OK = 2;
+}
+
+message ControlRequest {
+    int32 dst_id = 1;
+    int32 src_id = 2;
+    int32 request_id = 3;
+    Command cmd = 4;
+}
+
+message ControlReply {
+    int32 dst_id = 1;
+    int32 src_id = 2;
+    int32 request_id = 3;
+    Status status = 4;
+}
